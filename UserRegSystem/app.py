@@ -102,20 +102,183 @@ def registration_stats():
     dates = [str(r[0]) for r in results]
     counts = [r[1] for r in results]
 
-    # Plotting
-    plt.style.use('dark_background')
-    plt.figure(figsize=(10, 6))
-    plt.bar(dates, counts, color='#39ff14', edgecolor='black')
-    plt.xlabel('Date', color='white')
-    plt.ylabel('New Registrations', color='white')
-    plt.title('Daily User Registrations', color='#39ff14', fontsize=16, fontweight='bold')
-    plt.xticks(rotation=45, color='white')
-    plt.yticks(color='white')
-    plt.grid(color='#333', linestyle='--', linewidth=0.5)
+    # Plotting - Light theme for white background
+    fig, ax = plt.subplots(figsize=(10, 6))
+    fig.patch.set_facecolor('#f8f9fa')
+    ax.set_facecolor('#f8f9fa')
+    ax.bar(dates, counts, color='#1a5fb4', edgecolor='#ffc107')
+    ax.set_xlabel('Date', color='#1a1a2e', fontweight='bold')
+    ax.set_ylabel('New Registrations', color='#1a1a2e', fontweight='bold')
+    ax.set_title('Daily User Registrations', color='#1a5fb4', fontsize=16, fontweight='bold')
+    plt.xticks(rotation=45, color='#1a1a2e')
+    plt.yticks(color='#1a1a2e')
+    ax.grid(color='#dee2e6', linestyle='--', linewidth=0.5)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     plt.tight_layout()
 
     img = io.BytesIO()
-    plt.savefig(img, format='png', transparent=True)
+    plt.savefig(img, format='png', facecolor='#f8f9fa')
+    img.seek(0)
+    plt.close()
+
+    return send_file(img, mimetype='image/png')
+
+# --- EVENT API ENDPOINTS ---
+
+@app.route('/api/events')
+def get_events():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+    
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT e.*, 
+               (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.id) as registration_count
+        FROM events e
+        ORDER BY e.event_date ASC
+    """)
+    events = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    # Convert date objects to strings for JSON serialization
+    for event in events:
+        if event.get('event_date'):
+            event['event_date'] = str(event['event_date'])
+        if event.get('created_at'):
+            event['created_at'] = str(event['created_at'])
+    
+    return jsonify({'success': True, 'events': events})
+
+@app.route('/api/events/register', methods=['POST'])
+def register_event():
+    data = request.json
+    user_id = data.get('user_id')
+    event_id = data.get('event_id')
+    
+    if not user_id or not event_id:
+        return jsonify({'success': False, 'message': 'Missing user_id or event_id'}), 400
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+    
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO event_registrations (user_id, event_id) VALUES (%s, %s)",
+            (user_id, event_id)
+        )
+        conn.commit()
+        return jsonify({'success': True, 'message': 'Registered successfully'})
+    except mysql.connector.IntegrityError:
+        return jsonify({'success': False, 'message': 'Already registered for this event'}), 409
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/events/unregister', methods=['POST'])
+def unregister_event():
+    data = request.json
+    user_id = data.get('user_id')
+    event_id = data.get('event_id')
+    
+    if not user_id or not event_id:
+        return jsonify({'success': False, 'message': 'Missing user_id or event_id'}), 400
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+    
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "DELETE FROM event_registrations WHERE user_id = %s AND event_id = %s",
+            (user_id, event_id)
+        )
+        conn.commit()
+        if cursor.rowcount > 0:
+            return jsonify({'success': True, 'message': 'Unregistered successfully'})
+        else:
+            return jsonify({'success': False, 'message': 'Registration not found'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/user/<int:user_id>/registrations')
+def get_user_registrations(user_id):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+    
+    cursor = conn.cursor()
+    cursor.execute("SELECT event_id FROM event_registrations WHERE user_id = %s", (user_id,))
+    results = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    event_ids = [r[0] for r in results]
+    return jsonify({'success': True, 'event_ids': event_ids})
+
+@app.route('/stats/event_registrations.png')
+def event_registration_stats():
+    conn = get_db_connection()
+    if not conn:
+        return "Database Error", 500
+    
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT e.name, COUNT(er.id) as count 
+        FROM events e 
+        LEFT JOIN event_registrations er ON e.id = er.event_id 
+        GROUP BY e.id, e.name 
+        ORDER BY count DESC
+    """)
+    results = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    event_names = [r[0] for r in results]
+    counts = [r[1] for r in results]
+
+    # Plotting - Light theme for white background
+    fig, ax = plt.subplots(figsize=(10, 6))
+    fig.patch.set_facecolor('#f8f9fa')
+    ax.set_facecolor('#f8f9fa')
+    
+    # Create gradient colors - Blue-Gold theme
+    colors = ['#1a5fb4', '#3584e4', '#ffc107']
+    bars = ax.barh(event_names, counts, color=colors[:len(event_names)], edgecolor='#1a5fb4', linewidth=2)
+    
+    # Add glow effect
+    for bar in bars:
+        bar.set_alpha(0.9)
+    
+    ax.set_xlabel('Number of Registrations', color='#1a1a2e', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Events', color='#1a1a2e', fontsize=12, fontweight='bold')
+    ax.set_title('Event Registration Statistics', color='#1a5fb4', fontsize=16, fontweight='bold')
+    ax.tick_params(colors='#1a1a2e')
+    ax.grid(color='#dee2e6', linestyle='--', linewidth=0.5, axis='x')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_color('#dee2e6')
+    ax.spines['bottom'].set_color('#dee2e6')
+    
+    # Add value labels on bars
+    for i, (bar, count) in enumerate(zip(bars, counts)):
+        ax.text(bar.get_width() + 0.1, bar.get_y() + bar.get_height()/2, 
+                str(count), va='center', color='#1a5fb4', fontweight='bold', fontsize=14)
+    
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png', facecolor='#f8f9fa', dpi=100)
     img.seek(0)
     plt.close()
 

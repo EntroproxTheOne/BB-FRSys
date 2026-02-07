@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Analytics Dashboard</title>
+    <title>TCETReg - Event Registration</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
         <!-- Navigation/Header -->
         <header>
-            <div class="logo">Analytics<span>Pro</span></div>
+            <div class="logo">TCET<span>Reg</span></div>
             <nav id="nav-links">
-                <button id="nav-login" class="nav-btn active">Login</button>
+                <button id="nav-home" class="nav-btn active">Home</button>
+                <button id="nav-login" class="nav-btn">Login</button>
                 <button id="nav-register" class="nav-btn">Register</button>
                 <button id="logout-btn" class="nav-btn hidden">Logout</button>
             </nav>
@@ -21,8 +26,34 @@
 
         <!-- Main Content Area -->
         <main>
+            <!-- Home View -->
+            <section id="home-view" class="view active-view">
+                <div class="home-header">
+                    <h1>Live Events</h1>
+                    <p class="subtitle">Discover and register for upcoming events</p>
+                </div>
+
+                <div class="events-container" id="events-container">
+                    <!-- Events will be dynamically loaded here -->
+                    <div class="loading-events">
+                        <div class="spinner"></div>
+                        <p>Loading events...</p>
+                    </div>
+                </div>
+
+                <div class="event-stats-section">
+                    <h2>Registration Statistics</h2>
+                    <div class="chart-card">
+                        <div class="img-wrapper">
+                            <img id="event-stats-graph" src="" alt="Event Registration Statistics">
+                        </div>
+                        <button id="refresh-event-stats" class="secondary-btn">Refresh Stats</button>
+                    </div>
+                </div>
+            </section>
+
             <!-- Login View -->
-            <section id="login-view" class="view active-view">
+            <section id="login-view" class="view">
                 <div class="card">
                     <h1>Welcome Back</h1>
                     <p class="subtitle">Login to view registration statistics</p>
@@ -67,7 +98,7 @@
                     <h1>Registration Analytics</h1>
                     <p>Real-time overview of user registrations</p>
                 </div>
-                
+
                 <div class="chart-container">
                     <div class="chart-card">
                         <h3>Registration Trend</h3>
@@ -80,11 +111,12 @@
                 </div>
             </section>
         </main>
-        
+
         <!-- Toast Notification -->
         <div id="toast" class="toast hidden"></div>
     </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>
