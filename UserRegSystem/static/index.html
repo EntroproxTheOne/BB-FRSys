@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Analytics Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation/Header -->
+        <header>
+            <div class="logo">Analytics<span>Pro</span></div>
+            <nav id="nav-links">
+                <button id="nav-login" class="nav-btn active">Login</button>
+                <button id="nav-register" class="nav-btn">Register</button>
+                <button id="logout-btn" class="nav-btn hidden">Logout</button>
+            </nav>
+        </header>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Login View -->
+            <section id="login-view" class="view active-view">
+                <div class="card">
+                    <h1>Welcome Back</h1>
+                    <p class="subtitle">Login to view registration statistics</p>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-username">Username</label>
+                            <input type="text" id="login-username" required placeholder="Enter your username">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" required placeholder="Enter your password">
+                        </div>
+                        <button type="submit" class="primary-btn">Log In</button>
+                        <p class="switch-msg">Don't have an account? <a href="#" id="goto-register">Register</a></p>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Register View -->
+            <section id="register-view" class="view">
+                <div class="card">
+                    <h1>Create Account</h1>
+                    <p class="subtitle">Join us to access the dashboard</p>
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label for="reg-username">Username</label>
+                            <input type="text" id="reg-username" required placeholder="Choose a username">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-password">Password</label>
+                            <input type="password" id="reg-password" required placeholder="Choose a password">
+                        </div>
+                        <button type="submit" class="primary-btn">Sign Up</button>
+                        <p class="switch-msg">Already have an account? <a href="#" id="goto-login">Login</a></p>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view">
+                <div class="dashboard-header">
+                    <h1>Registration Analytics</h1>
+                    <p>Real-time overview of user registrations</p>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-card">
+                        <h3>Registration Trend</h3>
+                        <div class="img-wrapper">
+                            <img id="stats-graph" src="" alt="Registration Statistics Graph">
+                            <div id="loading-spinner" class="spinner hidden"></div>
+                        </div>
+                        <button id="refresh-btn" class="secondary-btn">Refresh Data</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Toast Notification -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
