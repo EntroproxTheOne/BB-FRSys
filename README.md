@@ -54,3 +54,5 @@ Git is used to track changes in the codebase during development.
 
 * **Commit**: Used `git commit` to save snapshots of the project progress.
 * **Add**: Used `git add` to stage files for commit.
+
+* THIS IS A COLLEGE PROJECT CREATED SOLELY FOR COLLEGE PURPOSES
